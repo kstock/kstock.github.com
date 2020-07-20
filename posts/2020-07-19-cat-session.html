@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>My Hakyll Blog - Vim sessions - peek inside before opening</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../">My Hakyll Blog</a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../archive.html">Archive</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Vim sessions - peek inside before opening</h1>
+
+            <div class="info">
+    Posted on July 19, 2020
+    
+</div>
+
+<h1 id="sessions">Sessions</h1>
+<pre><code>Vim sessions allow you to save and resume buffer/window state.
+
+Previously I described helpers for starting/reseting vim sessions.
+
+Now I will describe a helper for quickly printing information about a session so you can avoid having to open it to know what is inside it.  
+This can be useful if you have other vim processes running, and want to make sure you are not going to open a file that is already open.
+
+I often use this to check if I want to `vims_refresh` a new session instead of resuming an old one.</code></pre>
+<h1 id="cat_session-itself">cat_session itself</h1>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" title="1"><span class="fu">cat_session()</span><span class="kw">{</span></a>
+<a class="sourceLine" id="cb2-2" title="2">    <span class="va">SESSION_FILENAME=${1-</span>Session.vim<span class="va">}</span></a>
+<a class="sourceLine" id="cb2-3" title="3">    <span class="kw">if</span><span class="bu"> [</span> <span class="ot">!</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st">&quot;</span><span class="bu"> ]</span>; <span class="kw">then</span></a>
+<a class="sourceLine" id="cb2-4" title="4">        <span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st"> does not exist&quot;</span></a>
+<a class="sourceLine" id="cb2-5" title="5">        <span class="bu">return</span></a>
+<a class="sourceLine" id="cb2-6" title="6">    <span class="kw">fi</span></a>
+<a class="sourceLine" id="cb2-7" title="7"></a>
+<a class="sourceLine" id="cb2-8" title="8">    <span class="fu">wc</span> -l <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st">&quot;</span></a>
+<a class="sourceLine" id="cb2-9" title="9"></a>
+<a class="sourceLine" id="cb2-10" title="10">    <span class="fu">stat</span> <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> -E <span class="st">'Modify|Birth'</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/\..*//'</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="st">'\n'</span> <span class="st">'|'</span></a>
+<a class="sourceLine" id="cb2-11" title="11">    <span class="bu">echo</span> <span class="co"># so next line is not on same line!!!</span></a>
+<a class="sourceLine" id="cb2-12" title="12"></a>
+<a class="sourceLine" id="cb2-13" title="13">    <span class="va">NUM_BUFFERS=</span><span class="st">&quot;</span><span class="va">$(</span><span class="fu">grep</span> badd <span class="va">$SESSION_FILENAME</span> <span class="kw">|</span> <span class="fu">wc</span> -l<span class="va">)</span><span class="st">&quot;</span></a>
+<a class="sourceLine" id="cb2-14" title="14">    <span class="bu">echo</span> <span class="st">&quot;num buffers: </span><span class="va">$NUM_BUFFERS</span><span class="st">&quot;</span></a>
+<a class="sourceLine" id="cb2-15" title="15"></a>
+<a class="sourceLine" id="cb2-16" title="16">    <span class="va">DIR=${PWD/</span>#<span class="va">$HOME/</span><span class="st">''</span><span class="va">}</span></a>
+<a class="sourceLine" id="cb2-17" title="17">    <span class="fu">grep</span> badd <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st">&quot;</span>\</a>
+<a class="sourceLine" id="cb2-18" title="18">        <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s;.*</span><span class="va">$DIR</span><span class="st">;.;&quot;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/badd +[0-9]\+//'</span>\</a>
+<a class="sourceLine" id="cb2-19" title="19">        <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">nl</span></a>
+<a class="sourceLine" id="cb2-20" title="20"><span class="kw">}</span></a></code></pre></div>
+<h1 id="example-output">example output</h1>
+<p>Running this script on the session I’m using to edit this post write now produces</p>
+<pre><code>$ cat_session
+
+114 Session.vim
+Modify: 2020-07-17 19:04:16| Birth: 2020-07-17 18:39:34|
+num buffers: 4
+     1   posts/2019-12-08-vims-sessions.markdown
+     2   posts/latest.markdown
+     3   site.hs
+     4   ~/workspace/misc/myvimscripts/cat_session.sh</code></pre>
+<h1 id="script-explanation">script explanation</h1>
+<p>Run <code>cat_session</code> in a directory with a session file. If you named your session something other than <code>Session.vim</code> you can pass the filename as an arg.</p>
+<p><code>stat</code> is used to display information on when the Session was created/last updated. WARNING: Some filesystems do not support “birth” time.</p>
+<p>In a session file, <code>badd</code> is used to add all the open files. I count these files using <code>wc -l</code>.</p>
+<p>The next section is slightly more complicated</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" title="1"><span class="va">DIR=${PWD/</span>#<span class="va">$HOME/</span><span class="st">''</span><span class="va">}</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="fu">grep</span> badd <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st">&quot;</span>\</a>
+<a class="sourceLine" id="cb4-3" title="3">    <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s;.*</span><span class="va">$DIR</span><span class="st">;.;&quot;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/badd +[0-9]\+//'</span>\</a>
+<a class="sourceLine" id="cb4-4" title="4">    <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">nl</span></a></code></pre></div>
+<p>The goal of this section is to:</p>
+<pre><code>do a numbered list of the files in the session
+
+make paths in the same project relative paths</code></pre>
+<h2 id="ensuring-relative-paths">Ensuring relative paths</h2>
+<p>When I use <code>neovim</code> I’ve been seeing relative paths in the Session.vim (which makes this unneeded),</p>
+<p>however with <code>vim 8.2</code> I’ve seen absolute paths like:</p>
+<p><code>badd +1 ~/path/to/file.txt</code></p>
+<p>I want these paths to instead look like:</p>
+<p><code>./file.txt</code></p>
+<p>to reduce visual noise and make it easier to distinguish files in the session from files outside the current project.</p>
+<h2 id="how-to-remove-the-folder-prefix">how to remove the folder prefix</h2>
+<p>To remove this prefix I get the <code>$PWD</code>, which will be something like:</p>
+<p><code>/home/user/path/to</code></p>
+<p><code>vim</code> has the path with <code>~</code> instead of <code>/home/user</code>, so I do:</p>
+<p><code>DIR=${PWD/#$HOME/''}</code></p>
+<p>This uses <a href="https://tldp.org/LDP/abs/html/string-manipulation.html">string subsitution</a></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><a class="sourceLine" id="cb6-1" title="1"><span class="va">$foo</span>=<span class="ex">prefix_something</span></a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="va">$echo</span> <span class="va">${foo/</span>#prefix<span class="va">/</span><span class="st">''</span><span class="va">}</span></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="ex">_something</span></a></code></pre></div>
+<p>It deletes the shortest match of <code>#substring</code> from front of a <code>$string</code>.</p>
+<p>So I will end up with <code>/path/to</code></p>
+<p>I then use <code>sed</code> to remove all of the line before the filename.</p>
+<p>To avoid having to escape the <code>/</code> in the path, I use <code>;</code> as the field separator instead of the default <code>/</code>:</p>
+<p><code>sed &quot;s;.*$DIR;.;&quot;</code></p>
+<p>This is the same as `sed “s/string/replace/” because sed allows you to use any character as a field separator.</p>
+<h2 id="rest-of-the-script">rest of the script</h2>
+<p>The next <code>sed 's/badd +[0-9]\+//'\</code> strips the <code>badd +$num</code> from the lines that are in the same project.</p>
+<p>I then sort and add number lines with <code>| sort | nl</code></p>
+<h1 id="conclusion">conclusion</h1>
+<p>Sessions are very useful, but sometimes you just want to start all over. With <code>cat_session</code> I can quickly decide if I want to restart my session, and can get a nice overview of what files were recently being edited without opening vim itself or digging into <code>git</code>.</p>
+<p>There are lots of ways the script could be extended, for example:</p>
+<ul>
+<li><p>add line counts to each of the files</p></li>
+<li><p>display git information for each of the files</p></li>
+<li><p>prompt user if they want to enter or restart the session</p></li>
+</ul>
+<p>But for now this is very useful for me as is!</p>
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>
