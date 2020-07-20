@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>My Hakyll Blog - 2020-07-19-cat-session</title>
+        <title>My Hakyll Blog - Vim sessions - peek inside before opening</title>
         <link rel="stylesheet" type="text/css" href="../css/default.css" />
     </head>
     <body>
@@ -14,43 +14,33 @@
             <div id="navigation">
                 <a href="../">Home</a>
                 <a href="../about.html">About</a>
-                <a href="../contact.html">Contact</a>
                 <a href="../archive.html">Archive</a>
             </div>
         </div>
 
         <div id="content">
-            <h1>2020-07-19-cat-session</h1>
+            <h1>Vim sessions - peek inside before opening</h1>
 
             <div class="info">
     Posted on July 19, 2020
     
 </div>
 
-<div id="header">
-<div id="logo">
-<a href="../">My Hakyll Blog</a>
-</div>
-<div id="navigation">
-<a href="../">Home</a> <a href="../about.html">About</a> <a href="../archive.html">Archive</a>
-</div>
-</div>
-<div id="content">
-<h1 id="vim-sessions---peek-inside-before-opening">Vim sessions - peek inside before opening</h1>
-<div class="info">
-Posted on July 19, 2020
-</div>
 <h1 id="sessions">Sessions</h1>
 <pre><code>Vim sessions allow you to save and resume buffer/window state.
 
 Previously I described helpers for starting/reseting vim sessions.
 
-Now I will describe a helper for quickly printing information about a session so you can avoid having to open it to know what is inside it.  
-This can be useful if you have other vim processes running, and want to make sure you are not going to open a file that is already open.
+Now I will describe a helper for quickly printing information 
+
+about a session so you can avoid having to open it to know what is inside it
+
+This can be useful if you have other vim processes running,
+
+and want to make sure you are not going to open a file that is already open.
 
 I often use this to check if I want to `vims_refresh` a new session instead of resuming an old one.</code></pre>
 <h1 id="cat_session-itself">cat_session itself</h1>
-<div id="cb2" class="sourceCode">
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" title="1"><span class="fu">cat_session()</span><span class="kw">{</span></a>
 <a class="sourceLine" id="cb2-2" title="2">    <span class="va">SESSION_FILENAME=${1-</span>Session.vim<span class="va">}</span></a>
 <a class="sourceLine" id="cb2-3" title="3">    <span class="kw">if</span><span class="bu"> [</span> <span class="ot">!</span> <span class="ot">-f</span> <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st">&quot;</span><span class="bu"> ]</span>; <span class="kw">then</span></a>
@@ -71,7 +61,6 @@ I often use this to check if I want to `vims_refresh` a new session instead of r
 <a class="sourceLine" id="cb2-18" title="18">        <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s;.*</span><span class="va">$DIR</span><span class="st">;.;&quot;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/badd +[0-9]\+//'</span>\</a>
 <a class="sourceLine" id="cb2-19" title="19">        <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">nl</span></a>
 <a class="sourceLine" id="cb2-20" title="20"><span class="kw">}</span></a></code></pre></div>
-</div>
 <h1 id="example-output">example output</h1>
 <p>Running this script on the session I’m using to edit this post write now produces</p>
 <pre><code>$ cat_session
@@ -88,12 +77,10 @@ num buffers: 4
 <p><code>stat</code> is used to display information on when the Session was created/last updated. WARNING: Some filesystems do not support “birth” time.</p>
 <p>In a session file, <code>badd</code> is used to add all the open files. I count these files using <code>wc -l</code>.</p>
 <p>The next section is slightly more complicated</p>
-<div id="cb4" class="sourceCode">
 <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" title="1"><span class="va">DIR=${PWD/</span>#<span class="va">$HOME/</span><span class="st">''</span><span class="va">}</span></a>
 <a class="sourceLine" id="cb4-2" title="2"><span class="fu">grep</span> badd <span class="st">&quot;</span><span class="va">$SESSION_FILENAME</span><span class="st">&quot;</span>\</a>
 <a class="sourceLine" id="cb4-3" title="3">    <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&quot;s;.*</span><span class="va">$DIR</span><span class="st">;.;&quot;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/badd +[0-9]\+//'</span>\</a>
 <a class="sourceLine" id="cb4-4" title="4">    <span class="kw">|</span> <span class="fu">sort</span> <span class="kw">|</span> <span class="fu">nl</span></a></code></pre></div>
-</div>
 <p>The goal of this section is to:</p>
 <pre><code>do a numbered list of the files in the session
 
@@ -111,11 +98,9 @@ make paths in the same project relative paths</code></pre>
 <p><code>vim</code> has the path with <code>~</code> instead of <code>/home/user</code>, so I do:</p>
 <p><code>DIR=${PWD/#$HOME/''}</code></p>
 <p>This uses <a href="https://tldp.org/LDP/abs/html/string-manipulation.html">string subsitution</a></p>
-<div id="cb6" class="sourceCode">
 <div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><a class="sourceLine" id="cb6-1" title="1"><span class="va">$foo</span>=<span class="ex">prefix_something</span></a>
 <a class="sourceLine" id="cb6-2" title="2"><span class="va">$echo</span> <span class="va">${foo/</span>#prefix<span class="va">/</span><span class="st">''</span><span class="va">}</span></a>
 <a class="sourceLine" id="cb6-3" title="3"><span class="ex">_something</span></a></code></pre></div>
-</div>
 <p>It deletes the shortest match of <code>#substring</code> from front of a <code>$string</code>.</p>
 <p>So I will end up with <code>/path/to</code></p>
 <p>I then use <code>sed</code> to remove all of the line before the filename.</p>
@@ -134,10 +119,6 @@ make paths in the same project relative paths</code></pre>
 <li><p>prompt user if they want to enter or restart the session</p></li>
 </ul>
 <p>But for now this is very useful for me as is!</p>
-</div>
-<div id="footer">
-Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a>
-</div>
 
         </div>
         <div id="footer">
