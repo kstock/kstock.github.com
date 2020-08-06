@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Mostly Vim Stuff - Zsh dotfile tip - reload alias showing symlink</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-52155902-2"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-52155902-2');
+        </script>
+
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../">Mostly Vim Stuff</a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../archive.html">Archive</a>
+                <a href="../tags.html">Tags</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Zsh dotfile tip - reload alias showing symlink</h1>
+
+            <div class="info">
+    
+        Posted on 2020-08-05
+    
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/shell.html">shell</a>, <a href="../tags/zsh.html">zsh</a>
+    
+</div>
+
+<h1 id="section"></h1>
+<p>It is useful to have an alias to quickly reload your zshrc.</p>
+<p>but it can be confusing sometimes if you are juggling different symlinks for your configs.</p>
+<p>This is an overly verbose explanation of a simple thing I did to ease this extremely terrible mild inconvenience.</p>
+<h2 id="a-decent-start">A decent start</h2>
+<p>You can source your <code>~/.zshrc</code> after editing with <code>source ~/.zshrc</code></p>
+<p>but typing <code>reload</code> is fewer characters so lets make an alias…</p>
+<p><code>alias reload=&quot;souce ~/.zshrc&quot;</code></p>
+<h2 id="but-theres-more-letters-than-there-needs-to-be">But there’s more (letters than there needs to be)!</h2>
+<p>Let’s use <code>rel</code> to cut down on characters,</p>
+<p>but leave <code>reload</code> to be careful in case we someday forget what amazing time-saving plans we made.</p>
+<p><code>alias rel=&quot;reload&quot;</code></p>
+<h2 id="still-could-be-better">Still could be better</h2>
+<p>It is nice to symlink your dotfiles from another centralized location.</p>
+<p>This has many benefits:</p>
+<ul>
+<li>easy to switch configs</li>
+<li>easy to version control all dotfiles in one place</li>
+<li>you can have the dotfiles in the “real” directory not be hidden (ie not start with a dot) for easier visibility</li>
+</ul>
+<p>But unfortunately it can be confusing if you do end up messing with the symlink, since you might end up editing the wrong file.</p>
+<p>Currently I am revising my dotfiles on several machines and have ended up upgrading this <code>reload</code> helper one more level…</p>
+<h1 id="reload-showing-symlink">reload showing symlink</h1>
+<p>The desire is to have the <code>reload</code> alias additionally</p>
+<p><code>echo 'ZSH config reloaded from $ZSH_DOTFILE_SYMLINK_PATH'&quot;</code></p>
+<p>with the <code>$ZSH_DOTFILE_SYMLINK_PATH</code> expanded out like:</p>
+<p><code>/home/kstock/.zshrc -&gt; /home/kstock/dotfiles/kenvy/zsh/zshrc_kenvy</code></p>
+<p>Here is how I’ve done this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode zsh"><code class="sourceCode zsh"><a class="sourceLine" id="cb1-1" title="1"><span class="ot">ZSH_DOTFILE_SYMLINK_PATH=</span><span class="st">&quot;</span><span class="ot">$(</span><span class="kw">ls</span> -l ~/.zshrc <span class="kw">|</span> <span class="kw">grep</span> -o <span class="st">'.home.*'</span><span class="ot">)</span><span class="st">&quot;</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="co"># expands out to show symlink source:</span></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="co"># ~/.zshrc &amp;&amp; echo 'ZSH config reloaded from /home/kstock/.zshrc -&gt; /home/kstock/dotfiles/kenvy/zsh/zshrc_kenvy'</span></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="kw">alias</span> <span class="ot">reload=</span><span class="st">&quot;. ~/.zshrc &amp;&amp; echo 'ZSH config reloaded from </span><span class="ot">$ZSH_DOTFILE_SYMLINK_PATH</span><span class="st">'&quot;</span></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="kw">alias</span> <span class="ot">rel=</span><span class="st">&quot;reload&quot;</span></a></code></pre></div>
+<h2 id="code-explnation">code explnation</h2>
+<p><code>ls -l ~/.zshrc</code> will include <code>-&gt; $SYMLINK_TARGET</code> if it is a symlink</p>
+<pre><code>lrwxrwxrwx 1 kstock kstock 51 Aug  4 11:32 /home/kstock/.zshrc -&gt; /home/kstock/revised_dotfiles/zsh/revised_zshrc.zsh</code></pre>
+<p>but it will also include a bunch of extra stuff!</p>
+<p><code>| grep -o '.home.*'</code> is used to remove the junk</p>
+<p><code>-o</code> stands for printing <code>--only-matching</code> parts so this will turn the above line into</p>
+<pre><code>/home/kstock/.zshrc -&gt; /home/kstock/revised_dotfiles/zsh/revised_zshrc.zsh</code></pre>
+<h2 id="caveats">caveats</h2>
+<p>If your name is <code>home</code> or you do not have your <code>zshrc</code> in your home directory you will have to alter the regex.</p>
+<h1 id="conclusion">conclusion</h1>
+<figure>
+<img src="../images/reload_symlink.gif" alt="alias in action" /><figcaption>alias in action</figcaption>
+</figure>
+<div class="sourceCode" id="cb4"><pre class="sourceCode zsh"><code class="sourceCode zsh"><a class="sourceLine" id="cb4-1" title="1"><span class="ot">ZSH_DOTFILE_SYMLINK_PATH=</span><span class="st">&quot;</span><span class="ot">$(</span><span class="kw">ls</span> -l ~/.zshrc <span class="kw">|</span> <span class="kw">grep</span> -o <span class="st">'.home.*'</span><span class="ot">)</span><span class="st">&quot;</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="co"># expands out to show symlink source:</span></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="co"># ~/.zshrc &amp;&amp; echo 'ZSH config reloaded from /home/kstock/.zshrc -&gt; /home/kstock/dotfiles/kenvy/zsh/zshrc_kenvy'</span></a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="kw">alias</span> <span class="ot">reload=</span><span class="st">&quot;. ~/.zshrc &amp;&amp; echo 'ZSH config reloaded from </span><span class="ot">$ZSH_DOTFILE_SYMLINK_PATH</span><span class="st">'&quot;</span></a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="kw">alias</span> <span class="ot">rel=</span><span class="st">&quot;reload&quot;</span></a></code></pre></div>
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>
